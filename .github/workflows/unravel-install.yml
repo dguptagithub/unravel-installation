@@ -1,0 +1,38 @@
+name: Unravel Installation
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  install-unravel:
+    runs-on: ubuntu-latest  # Runner where the script runs
+
+    steps:
+    # Step 1: Checkout Code
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set Up SSH
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.1
+      with:
+        ssh-private-key: SHA256:OndeOcUfqK6Mz1kgL9zEeeTzwAmaIMAttqP+sh6dLvw
+
+    # Step 3: Connect to the Instance and Install Prerequisites
+    - name: Install Prerequisites on Server
+      run: |
+        ssh -o StrictHostKeyChecking=no root@172.36.25.12 << 'EOF'
+        apt update -y
+        apt install -y wget curl tar
+        EOF
+
+    # Step 4: Download and Install Unravel
+    - name: Install Unravel
+      run: |
+        ssh root@172.36.25.12 << 'EOF'
+        curl http://cerdo.unraveldata.com:8081/artifactory/dist-internal/unravel/hotfix/4.7.9.7/unravel-4.7.9.7-hotfix.9121.tar.gz -o unravel-4.7.9.7-hotfix.9121.tar.gz
+        mkdir -p /opt/unravel
+        tar -xvzf unravel-4.7.9.7-hotfix.9121.tar.gz -C /opt/unravel
+        cd /opt/unravel
+        ./install.sh  # Adjust this command if specific parameters are required
+        EOF
